@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import ContactList from "./components/ContactList/ContactList";
+import initialContact from "./ContactList.json";
+import SearchBox from "./components/SearchBox/SearchBox";
+import ContactForm from "./components/ContactForm/ContactForm";
+import { useState, useEffect } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
+  const [contact, setContact] = useState(() => {
+    const savedContacts = localStorage.getItem("contacts");
+    return savedContacts ? JSON.parse(savedContacts) : initialContact;
+  });
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+    localStorage.setItem("contacts", JSON.stringify(contact));
+  }, [contact]);
+  const addContact = (newContact) => {
+    setContact((prevContacts) => {
+      return [...prevContacts, newContact];
+    });
+  };
+  const daleteContact = (contactId) => {
+    setContact((prevContacts) => {
+      const updatedContacts = prevContacts.filter(
+        (contact) => contact.id !== contactId
+      );
+      localStorage.setItem("contacts", JSON.stringify(updatedContacts));
+      return updatedContacts;
+    });
+  };
+  const visibleContacts = contact.filter((contact) =>
+    contact.name.toLowerCase().includes(search.toLowerCase())
+  );
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <h1>Phonebook</h1>
+      <ContactForm onAdd={addContact} />
+      <SearchBox value={search} onSearch={setSearch} />
+      <ContactList arrContacts={visibleContacts} onDelete={daleteContact} />
+    </div>
+  );
 }
-
-export default App
